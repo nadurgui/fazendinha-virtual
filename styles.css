@@ -1,0 +1,1131 @@
+
+:root{
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --hud-bg: rgba(0,0,0,.45);
+  --text: #ffffff;
+}
+
+*{ box-sizing: border-box; }
+html,body{ height:100%; margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#0b1220; }
+body{ display:flex; justify-content:center; align-items:center; }
+
+#app{
+  width: min(460px, 100vw);
+  height: min(920px, 100vh);
+  position: relative;
+  overflow:hidden;
+  background:#000;
+}
+
+.coin{ width:34px; height:34px; filter: drop-shadow(0 2px 4px rgba(0,0,0,.4)); }
+.money, .label{ font-size: 11px; opacity:.9; }
+.value{ font-size: 16px; font-weight: 800; letter-spacing:.3px; }
+
+.stage{
+  width:100%;
+  height:100%;
+}
+
+.slider{
+  width: 300%;
+  height: 100%;
+  display:flex;
+  transform: translateX(0%);
+  transition: transform .25s ease;
+  touch-action: pan-y;
+}
+
+.screen{
+  width: 33.3333%;
+  height:100%;
+  position: relative;
+}
+
+.bg{
+  width:100%;
+  height:100%;
+  object-fit: cover;
+  user-select:none;
+  -webkit-user-drag:none;
+}
+
+.overlay{
+  position:absolute;
+  inset:0;
+  z-index:2;
+}
+
+.hint{
+  position:absolute;
+  top: calc(76px + var(--safe-top));
+  left: 12px;
+  background: rgba(0,0,0,.35);
+  color:#fff;
+  padding: 6px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  backdrop-filter: blur(6px);
+}
+
+.plant{
+  position:absolute;
+  left: calc(var(--plant-left, 50%) + var(--plant-x, 0px));
+  top: calc(var(--plant-top, 44.0%) + var(--plant-y, 0px) + (var(--plant-top-shift, 0) * 1%));
+  transform: translate(-50%,-100%) rotate(var(--sway, 0deg)) scale(1);
+
+  width: 24%;
+  max-width: 170px;
+
+  pointer-events:none;
+
+  /* sombra cartoon suave */
+  filter: drop-shadow(0 14px 10px rgba(0,0,0,.35));
+}
+
+
+/* ajuste por estágio (tamanho + levinho para cima) */
+.plant.stage1{
+  top: calc(var(--plant-top, 44.0%) + 0.8% + (var(--plant-top-shift, 0) * 1%));
+  transform: translate(-50%,-100%) rotate(var(--sway, 0deg)) scale(calc(0.78 * var(--plant-scale-mul, 1)));
+}
+
+.plant.stage2{
+  top: calc(var(--plant-top, 44.0%) + 0.2% + (var(--plant-top-shift, 0) * 1%));
+  transform: translate(-50%,-100%) rotate(var(--sway, 0deg)) scale(calc(0.92 * var(--plant-scale-mul, 1)));
+}
+
+.plant.stage3{
+  top: calc(var(--plant-top, 44.0%) + 0.0% + (var(--plant-top-shift, 0) * 1%));
+  transform: translate(-50%,-100%) rotate(var(--sway, 0deg)) scale(calc(1.05 * var(--plant-scale-mul, 1)));
+}
+
+
+.hidden{ display:none; }
+
+.hit{
+  position:absolute;
+  background: rgba(255,255,255,0.0);
+  border: none;
+  cursor:pointer;
+  border-radius: 16px;
+}
+
+.hit:active{ outline: 2px solid rgba(255,255,255,.35); }
+
+/* Mapeamento dos botões (V9 ajustado) */
+.hit-choose-seed{ left: 6.5%; bottom: 13.2%; width: 24%; height: 12.0%; }
+.hit-plant{ left: 31.5%; bottom: 15.2%; width: 37%; height: 10.0%; border-radius: 18px; }
+.hit-water{ left: 72.0%; bottom: 13.2%; width: 22.5%; height: 12.0%; }
+.hit-harvest{ left: 38.5%; bottom: 8.2%; width: 23%; height: 8.5%; border-radius: 14px; }
+
+/* Canteiro 4x: áreas de seleção dos slots (ajuste fino se precisar) */
+.hit-bed{ top: 56%; width: 16%; height: 10%; border-radius: 14px; }
+.hit-bed0{ left: 21%; }
+.hit-bed1{ left: 35%; }
+.hit-bed2{ left: 49%; }
+.hit-bed3{ left: 63%; }
+.hit-bed.active{ outline: 2px solid rgba(255,255,255,.35); }
+
+/* Rancho (V10 ajuste fino) */
+.hit-buy{ left: 6.5%; bottom: 14.6%; width: 24%; height: 12.2%; }
+.hit-choose-animal{ left: 31.5%; bottom: 16.8%; width: 37%; height: 10.2%; border-radius: 18px; }
+.hit-feed{ left: 72.0%; bottom: 14.6%; width: 22.5%; height: 12.2%; }
+.hit-harvest-ranch{ left: 38.8%; bottom: 9.6%; width: 22.4%; height: 7.8%; border-radius: 14px; }
+
+/* Modal */
+.modal{
+  position:absolute;
+  inset:0;
+  background: rgba(0,0,0,.55);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding: 16px;
+  z-index: 10;
+}
+.modal-card{
+  width: min(420px, 100%);
+  background: rgba(255,255,255,.95);
+  border-radius: 18px;
+  padding: 14px;
+  box-shadow: 0 18px 40px rgba(0,0,0,.35);
+}
+.modal-title{ font-size: 18px; font-weight: 900; color:#111827; }
+.modal-sub{ font-size: 13px; color:#374151; margin-top: 6px; margin-bottom: 12px; }
+.grid{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.tile{
+  border:none;
+  border-radius: 14px;
+  padding: 12px 8px;
+  font-weight: 800;
+  cursor:pointer;
+  background: #f3f4f6;
+  color:#111827;
+}
+.tile:active{ outline: 2px solid rgba(17,24,39,.25); }
+.row{
+  display:flex;
+  justify-content: space-between;
+  align-items:center;
+  gap: 10px;
+  margin-top: 12px;
+}
+.secondary{
+  border:none;
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: #111827;
+  color:white;
+  font-weight: 800;
+  cursor:pointer;
+}
+.status{ font-size: 12px; color:#111827; }
+.toast{
+  position:absolute;
+  left: 50%;
+  bottom: calc(18px + var(--safe-bottom));
+  transform: translateX(-50%);
+  background: rgba(0,0,0,.75);
+  color:#fff;
+  padding: 10px 12px;
+  border-radius: 14px;
+  z-index: 20;
+  font-size: 13px;
+  max-width: 92%;
+  text-align:center;
+  backdrop-filter: blur(6px);
+}
+
+/* Desktop: deixa como "telefone" centralizado */
+@media (min-width: 900px){
+  #app{ border-radius: 26px; box-shadow: 0 30px 80px rgba(0,0,0,.5); }
+}
+
+
+/* === AJUSTE: experiência apenas celular === */
+body{
+  background:#000;
+  align-items:flex-start;
+}
+
+#app{
+  width:100vw;
+  height:100vh;
+  border-radius:0;
+  box-shadow:none;
+}
+
+/* Modal mais integrado ao jogo (sem 'cartão branco') */
+.modal-card{
+  background: rgba(0,0,0,.85);
+  color:#fff;
+}
+
+.modal-title,
+.modal-sub,
+.status{
+  color:#fff;
+}
+
+.tile{
+  background: rgba(255,255,255,.15);
+  color:#fff;
+}
+
+.secondary{
+  background:#2563eb;
+}
+
+
+/* === V3: aparência de celular no PC (sem ficar gigante) === */
+body{
+  background:#000;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding: 18px;
+}
+
+/* Por padrão (desktop), fixa como "telefone" */
+#app{
+  width: 430px;
+  height: 860px;
+  border-radius: 28px;
+  box-shadow: 0 30px 80px rgba(0,0,0,.55);
+}
+
+/* Se a tela for menor que o "telefone", encaixa no viewport */
+@media (max-width: 480px), (max-height: 900px){
+  #app{
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+
+/* Modal: visual escuro integrado (mantém) */
+.modal-card{
+  background: rgba(0,0,0,.85);
+  color:#fff;
+}
+.modal-title, .modal-sub, .status{ color:#fff; }
+.tile{ background: rgba(255,255,255,.15); color:#fff; }
+.secondary{ background:#2563eb; }
+
+
+/* === V4: garante que .hidden sempre esconda (inclusive modais) === */
+.hidden{ display:none !important; }
+.modal.hidden{ display:none !important; }
+
+
+/* === V5: loja/inventário de sementes === */
+.tabs{
+  display:flex;
+  gap:10px;
+  margin: 10px 0 12px 0;
+}
+.tab{
+  flex:1;
+  border:none;
+  border-radius: 14px;
+  padding: 10px 12px;
+  font-weight: 900;
+  cursor:pointer;
+  background: rgba(255,255,255,.12);
+  color:#fff;
+}
+.tab.active{
+  background: rgba(37,99,235,.9);
+}
+
+.list{
+  display:flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 44vh;
+  overflow:auto;
+  padding-right: 4px;
+}
+.item{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+  background: rgba(255,255,255,.10);
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+.item .left{
+  display:flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.item .name{
+  font-weight: 900;
+}
+.item .meta{
+  font-size: 12px;
+  opacity: .9;
+}
+.pill{
+  font-size: 12px;
+  font-weight: 900;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.14);
+}
+.btn{
+  border:none;
+  border-radius: 12px;
+  padding: 9px 12px;
+  cursor:pointer;
+  font-weight: 900;
+  background: rgba(255,255,255,.14);
+  color:#fff;
+}
+.btn.primary{
+  background: rgba(16,185,129,.9);
+}
+.btn:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+}
+
+
+.overlay{ z-index: 10; }
+.hit{ z-index: 11; pointer-events: auto; }
+
+body.debug .animal-area{
+  outline: 2px dashed rgba(0,255,255,.55);
+}
+
+
+/* === V8: hitboxes relativas ao 'telefone' (proporção fixa) === */
+.screen{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#000;
+}
+
+.phone-frame{
+  position: relative;
+  height: 100%;
+  aspect-ratio: 1365 / 2048; /* mesma proporção das artes */
+  max-height: 100%;
+  max-width: 100%;
+}
+
+.phone-frame .bg{
+  width:100%;
+  height:100%;
+  object-fit: cover;
+}
+
+.phone-frame .overlay{
+  position:absolute;
+  inset:0;
+}
+
+/* HUD fica por cima do telefone */
+.hud{ z-index: 50; }
+
+/* === Produção: hitboxes invisíveis === */
+.hit{ background: transparent !important; outline: none !important; }
+
+
+/* === V13: remover borda branca e integrar telefone === */
+body{
+  background:#000;
+}
+
+/* remove qualquer fundo claro residual */
+.screen{
+  background:#000 !important;
+}
+
+/* phone-frame sem fundo branco */
+.phone-frame{
+  background: transparent !important;
+}
+
+/* garante que nada desenhe "cartão" atrás */
+#app{
+  background:#000;
+}
+
+
+/* sombra no chão do vaso */
+.plant-shadow{
+  position:absolute;
+  left: calc(var(--plant-left, 50%) + var(--plant-x, 0px));
+  top: calc(var(--plant-top, 61.0%) + 5.0% + var(--plant-y, 0px) + (var(--shadow-top-shift, 0) * 1%));
+  width: 26%;
+  height: 6.0%;
+  transform: translate(-50%,-50%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0,0,0,.35) 0%,
+    rgba(0,0,0,0) 70%
+  );
+  border-radius: 999px;
+  pointer-events:none;
+}
+
+.plant-shadow.stage1{ opacity:.35; transform: translate(-50%,-50%) scale(calc(0.9 * var(--shadow-scale-mul, 1))); }
+.plant-shadow.stage2{ opacity:.42; transform: translate(-50%,-50%) scale(calc(1.0 * var(--shadow-scale-mul, 1))); }
+.plant-shadow.stage3{ opacity:.48; transform: translate(-50%,-50%) scale(calc(1.08 * var(--shadow-scale-mul, 1))); }
+
+
+/* === V16: HUD dentro da tela do celular === */
+.hud{
+  position:absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  /* respeita a área segura (notch) */
+  padding: calc(12px + var(--safe-top)) 14px 10px 14px;
+  display:flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 61;
+  pointer-events:none;
+}
+
+
+/* === V17: grupos de sementes + busca === */
+.search{
+  width: 100%;
+  border: none;
+  border-radius: 14px;
+  padding: 10px 12px;
+  font-weight: 800;
+  outline: none;
+  color: #fff;
+  background: rgba(255,255,255,.12);
+  margin: 6px 0 10px 0;
+}
+.group{
+  background: rgba(255,255,255,.08);
+  border-radius: 16px;
+  overflow:hidden;
+}
+.group + .group{ margin-top: 10px; }
+.group-header{
+  width: 100%;
+  display:flex;
+  justify-content: space-between;
+  align-items:center;
+  gap: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  background: rgba(0,0,0,.22);
+  border: none;
+  color: #fff;
+  font-weight: 900;
+}
+.group-header .count{
+  opacity:.85;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.12);
+}
+.group-body{
+  padding: 10px 10px 12px 10px;
+  display:flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.group.collapsed .group-body{ display:none; }
+
+
+/* === V18: menu lateral de categorias (esquerda) === */
+.seed-layout{
+  display:flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.seed-rail{
+  width: 54px;
+  display:flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.rail-btn{
+  width: 54px;
+  height: 54px;
+  border: none;
+  border-radius: 18px;
+  cursor: pointer;
+  font-size: 22px;
+  background: rgba(255,255,255,.10);
+  color:#fff;
+}
+.rail-btn.active{
+  background: rgba(37,99,235,.95);
+}
+
+.seed-panel{
+  flex:1;
+  min-width: 0;
+}
+
+/* lista um pouco menor para caber melhor */
+.item{
+  padding: 9px 10px;
+}
+.item .meta{
+  font-size: 11px;
+}
+
+/* modal mais compacto no mobile (menos sobreposição) */
+.modal-card{
+  max-width: 420px;
+  width: min(92vw, 420px);
+}
+
+
+/* === V21: animação suave de crescimento === */
+
+/* transições base */
+.plant{
+  transition:
+    transform 420ms cubic-bezier(.22,.61,.36,1),
+    opacity 320ms ease,
+    filter 420ms ease;
+}
+
+.plant-shadow{
+  transition:
+    transform 420ms cubic-bezier(.22,.61,.36,1),
+    opacity 320ms ease;
+}
+
+/* efeito de "crescer" ao trocar estágio */
+.plant.grow{
+  animation: plantGrow 520ms cubic-bezier(.22,.61,.36,1);
+}
+
+.plant-shadow.grow{
+  animation: shadowGrow 520ms cubic-bezier(.22,.61,.36,1);
+}
+
+@keyframes plantGrow{
+  0%{
+    opacity: .6;
+    transform: translate(-50%,-100%) scale(calc(.92 * var(--plant-scale-mul, 1)));
+  }
+  60%{
+    opacity: 1;
+    transform: translate(-50%,-100%) scale(calc(1.06 * var(--plant-scale-mul, 1)));
+  }
+  100%{
+    opacity: 1;
+    transform: translate(-50%,-100%) scale(calc(1.00 * var(--plant-scale-mul, 1)));
+  }
+}
+
+@keyframes shadowGrow{
+  0%{
+    opacity: .35;
+    transform: translate(-50%,-50%) scale(calc(.92 * var(--shadow-scale-mul, 1)));
+  }
+  60%{
+    opacity: .45;
+    transform: translate(-50%,-50%) scale(calc(1.08 * var(--shadow-scale-mul, 1)));
+  }
+  100%{
+    opacity: .42;
+    transform: translate(-50%,-50%) scale(calc(1.00 * var(--shadow-scale-mul, 1)));
+  }
+}
+
+
+/* === FIX V22: plantas não bloqueiam cliques === */
+.plant,
+.plant-shadow{
+  pointer-events: none;
+}
+
+
+/* === V28: HUD visível dentro do celular === */
+#hudWrap .hud{
+  color: #fff;
+}
+#hudWrap .hud-left,
+#hudWrap .hud-right{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  background: rgba(0,0,0,.35);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 16px;
+  padding: 8px 10px;
+  backdrop-filter: blur(6px);
+}
+#hudWrap .label{
+  font-size: 11px;
+  font-weight: 900;
+  opacity: .9;
+}
+#hudWrap .value{
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.05;
+  text-shadow: 0 2px 0 rgba(0,0,0,.35);
+}
+#hudWrap .coin{
+  width: 24px;
+  height: 24px;
+}
+
+
+/* === V32: HUD moedas sempre visível + botão música === */
+#hudWrap{
+  position:absolute;
+  top:14px;
+  left:14px;
+  right:14px;
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  z-index:80;
+}
+#hudWrap .hud-left,
+#hudWrap .hud-right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background: rgba(0,0,0,.38);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 16px;
+  padding: 8px 10px;
+  backdrop-filter: blur(6px);
+  color:#fff;
+}
+#hudWrap .label{ font-size:11px; font-weight:900; opacity:.92; }
+#hudWrap .value{ font-size:18px; font-weight:900; line-height:1.05; text-shadow:0 2px 0 rgba(0,0,0,.35); }
+#hudWrap .coin{ width:24px; height:24px; }
+
+.icon-btn{
+  border:none;
+  background: rgba(255,255,255,.12);
+  color:#fff;
+  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  cursor:pointer;
+  font-size: 18px;
+}
+.icon-btn:active{ transform: scale(.98); }
+
+/* modal música slider */
+#musicModal input[type="range"]{
+  width:100%;
+  accent-color: #60a5fa;
+}
+
+
+
+#hudWrap{
+  position:absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  display:flex;
+  justify-content: space-between;
+  gap: 10px;
+  z-index: 120;
+  pointer-events:none; /* não bloqueia swipe/cliques */
+}
+#hudWrap .hud{
+  display:flex;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+#hudWrap .hud-left,
+#hudWrap .hud-right{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  background: rgba(0,0,0,.42);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 16px;
+  padding: 8px 10px;
+  backdrop-filter: blur(6px);
+  color:#fff;
+  pointer-events:auto; /* permite clicar no botão música */
+}
+#hudWrap .hud-left{ pointer-events:none; } /* moedas não precisa clique */
+#hudWrap .label{
+  font-size: 11px;
+  font-weight: 900;
+  opacity: .92;
+}
+#hudWrap .value{
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.05;
+  text-shadow: 0 2px 0 rgba(0,0,0,.35);
+}
+#hudWrap .coin{
+  width: 24px;
+  height: 24px;
+}
+#hudWrap .clock{
+  display:flex;
+  flex-direction: column;
+}
+#hudWrap .hud-right{
+  margin-left:auto;
+}
+
+
+/* === V34: HUD dentro da tela do celular (compacto, sem sobrepor) === */
+.overlay{
+  position: absolute;
+  inset: 0;
+}
+
+#hudWrap{
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  z-index: 90;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  pointer-events: none; /* por padrão não bloqueia swipe */
+}
+
+#hudWrap .hud{
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  pointer-events: none;
+}
+
+#hudWrap .hud-left,
+#hudWrap .hud-right{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  background: rgba(0,0,0,.35);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 14px;
+  padding: 6px 8px;
+  backdrop-filter: blur(6px);
+  color:#fff;
+}
+
+#hudWrap .hud-left{ pointer-events: none; }
+#hudWrap .hud-right{ pointer-events: auto; } /* permite clicar na música */
+
+#hudWrap .label{
+  font-size: 10px;
+  font-weight: 900;
+  opacity: .9;
+  line-height: 1.0;
+}
+#hudWrap .value{
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.05;
+  text-shadow: 0 2px 0 rgba(0,0,0,.35);
+}
+#hudWrap .coin{ width:18px; height:18px; }
+#hudWrap .clock{ display:flex; flex-direction:column; }
+
+.icon-btn{
+  pointer-events: auto;
+  border:none;
+  background: rgba(255,255,255,.14);
+  color:#fff;
+  border-radius: 12px;
+  width: 34px;
+  height: 34px;
+  cursor:pointer;
+  font-size: 16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.icon-btn:active{ transform: scale(.98); }
+
+/* garante que planta não bloqueie interações */
+.plant,.plant-shadow{ pointer-events:none; }
+
+/* Slider do modal música */
+#musicModal input[type="range"]{ width:100%; }
+
+
+/* === V34: HUD compacto dentro da tela === */
+#hudWrap{
+  top: 10px;
+  left: 10px;
+  right: 10px;
+}
+#hudWrap .hud-left,
+#hudWrap .hud-right{
+  border-radius: 14px;
+  padding: 6px 8px;
+  gap: 8px;
+}
+#hudWrap .label{ font-size: 10px; }
+#hudWrap .value{ font-size: 15px; }
+#hudWrap .coin{ width: 20px; height: 20px; }
+.icon-btn{ width: 34px; height: 34px; font-size: 16px; }
+
+
+/* Overlay para desbloquear autoplay de áudio (Chrome) */
+.audio-gate{
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,.65);
+  z-index: 9999;
+}
+.audio-gate.hidden{ display:none; }
+.audio-gate-card{
+  width: min(92vw, 420px);
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 16px;
+  padding: 18px 16px;
+  backdrop-filter: blur(10px);
+  text-align: center;
+}
+.audio-gate-title{ font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+.audio-gate-sub{ font-size: 13px; opacity: .9; margin-bottom: 12px; }
+
+
+/* === STATUS DA PLANTA (Regado / Não regado) === */
+.plant-status{
+  position:absolute;
+  left: 50%;
+  top: calc(39% + (var(--plant-top-shift, 0) * 0.3%));
+  transform: translateX(-50%);
+  background: rgba(0,0,0,.45);
+  color:#fff;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 6px 10px;
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+  pointer-events:none;
+  z-index: 6;
+}
+.plant-status.watered{
+  background: rgba(34,197,94,.85);
+}
+
+/* === TERRA ÚMIDA AO REGAR === */
+.soil-wet{
+  position:absolute;
+  left: 50%;
+  top: calc(57.8% + (var(--plant-top-shift, 0) * 0.25%));
+  width: 58%;
+  height: 20%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events:none;
+  z-index: 3;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(25,95,35,.55) 0%,
+    rgba(25,95,35,.33) 45%,
+    rgba(25,95,35,0) 75%
+  );
+  opacity: 0;
+  transition: opacity 280ms ease;
+}
+.soil-wet.active{ opacity: 1; }
+
+/* FIX: overlay não bloqueia cliques */
+.overlay, .phone-frame .overlay{ pointer-events:none; }
+.hit{ pointer-events:auto; }
+
+
+/* FIX: desativar efeito de terra úmida (remove sombra esverdeada) */
+.soil-wet{ display:none !important; }
+.soil-wet.active{ opacity:0 !important; }
+
+/* === Rancho: curral + animais dinâmicos === */
+.animal-area{
+  position:absolute;
+  /* área do curral na arte do rancho (ajuste fino se necessário) */
+  left: 11.5%;
+  top: 40.5%;
+  width: 77%;
+  height: 31.5%;
+  z-index: 12; /* acima do bg, abaixo do HUD/hit */
+  pointer-events: none;
+
+  /* mantém os animais "dentro" do cercado */
+  clip-path: ellipse(48% 36% at 50% 55%);
+}
+
+/* === Peixes: lago + peixes dinâmicos === */
+.fish-area{
+  position:absolute;
+  left: 14%;
+  top: 42.5%;
+  width: 72%;
+  height: 26.5%;
+  z-index: 12;
+  pointer-events:none;
+  /* prende os peixes dentro do lago */
+  clip-path: ellipse(48% 40% at 50% 52%);
+}
+
+.fish-sprite{
+  position:absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%,-50%);
+  font-size: 64px;
+  line-height: 1;
+  filter: drop-shadow(0 10px 10px rgba(0,0,0,.25));
+}
+
+.fish-sprite .badge{ background: rgba(34,197,94,.92); }
+
+.ranch-animal{
+  position:absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%,-50%);
+  font-size: 84px;
+  line-height: 1;
+  filter: drop-shadow(0 12px 10px rgba(0,0,0,.25));
+}
+
+/* pequeno selo de status do animal (alimentado) */
+.ranch-animal .badge{
+  position:absolute;
+  right: -8px;
+  top: -10px;
+  background: rgba(34,197,94,.92);
+  color:#fff;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 4px 7px;
+  border-radius: 999px;
+}
+
+/* tampas laterais (esconde os bichinhos pequenos do fundo) */
+
+/* Balão único da planta */
+.plant-info{
+  position:absolute;
+  left: 50%;
+  top: 28%;              /* mais em cima, ao lado do nome */
+  transform: translateX(-50%);
+  background: rgba(0,0,0,.45);
+  color:#fff;
+  padding: 6px 8px;
+  border-radius: 10px;
+  max-width: 150px;
+  backdrop-filter: blur(6px);
+  pointer-events:none;
+  z-index: 8;
+}
+
+.plant-info-title{
+  display:flex;
+  align-items:baseline;
+  gap: 6px;
+  line-height: 1.1;
+}
+
+.plant-info-title-label{
+  font-size: 11px;
+  font-weight: 900;
+  opacity: .95;
+}
+
+.plant-info-seed{
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.plant-info-sub{
+  font-size: 9px;
+  margin-top: 2px;
+  display:flex;
+  align-items:center;
+  gap: 6px;
+}
+
+.plant-info .dot{
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #9ca3af; /* cinza */
+}
+
+.plant-info.watered .dot{
+  background: #22c55e; /* verde */
+}
+.plant-info-timer{
+  margin-top: 3px;
+  font-size: 9px;
+  opacity: .9;
+  color: #e5e7eb; /* cinza claro */
+}
+.plant-info.ready .plant-info-timer{
+  color: #22c55e; /* verde quando pronto */
+  font-weight: 700;
+}
+
+/* === HUD: moedas canto superior esquerdo, música canto superior direito (ajuste 2026-02) === */
+.screen .overlay{ position: relative; } /* garante referência */
+
+.hud{
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display:flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: calc(18px + var(--safe-top, 0px)) 22px 0 22px; /* dentro do "céu", sem colar no notch */
+  z-index: 90;
+  pointer-events: none; /* não bloqueia cliques no jogo */
+}
+
+.hud-left,
+.hud-right{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  background: rgba(0,0,0,.35);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 14px;
+  padding: 6px 8px;
+  color:#fff;
+  backdrop-filter: blur(6px);
+}
+
+.hud-left{ pointer-events: none; } /* só exibe */
+.hud-right{ pointer-events: auto; } /* permite clicar na música */
+
+.coin{
+  width: 22px;
+  height: 22px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.35));
+}
+
+.money .label,
+.clock .label{
+  font-size: 10px;
+  font-weight: 900;
+  opacity: .92;
+  line-height: 1.0;
+}
+.money .value,
+.clock .value{
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.05;
+  text-shadow: 0 2px 0 rgba(0,0,0,.35);
+}
+
+.icon-btn{
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+}
+
+
+/* === FIX 2026-02: overlay deve ocupar a tela inteira (evita HUD "caindo" e scroll lateral) === */
+.screen .overlay{
+  position: absolute !important;
+  inset: 0 !important;
+}
+
+/* Evita rolagem horizontal do navegador */
+html, body{
+  overflow: hidden;
+}

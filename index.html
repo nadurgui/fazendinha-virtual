@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Fazendinha Virtual</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Overlay para liberar áudio no Chrome -->
+  <div id="audioGate" class="audio-gate hidden" role="button" aria-label="Ativar música">
+    <div class="audio-gate-card">
+      <div class="audio-gate-title">🎵 Ativar música</div>
+      <div class="audio-gate-sub">O Chrome bloqueia autoplay. Clique para liberar.</div>
+      <button id="btnEnableAudio" class="btn primary">Ativar</button>
+    </div>
+  </div>
+
+  <div id="app">
+    <div class="stage">
+      <div id="slider" class="slider">
+        <!-- TELA 1: VASO -->
+        <section class="screen screen-pot" aria-label="Tela do vaso">
+          <img class="bg" src="assets/tela_vaso.png" alt="Fundo - Vaso" draggable="false" />
+          <div class="overlay" aria-hidden="false">
+      <header class="hud">
+        <div class="hud-left">
+          <img class="coin" src="assets/icon_coin.svg" alt="Moedas" />
+          <div class="money">
+            <div class="label">Moedas</div>
+            <div class="value moneyValue">0</div>
+          </div>
+        </div>
+        <div class="hud-right">
+          <div class="clock">
+            <div class="label">Horário</div>
+            <div class="value clockValue">--:--:--</div>
+          </div>
+          <button class="icon-btn btnMusic" type="button" title="Música">🎵</button>
+        </div>
+      </header>
+    <!-- Plantas aparecem no canteiro (4 espaços) -->
+            <div class="beds" aria-hidden="true">
+              <div id="plantShadow0" class="plant-shadow hidden"></div>
+              <div id="plantShadow1" class="plant-shadow hidden"></div>
+              <div id="plantShadow2" class="plant-shadow hidden"></div>
+              <div id="plantShadow3" class="plant-shadow hidden"></div>
+
+              <img id="plantSprite0" class="plant hidden" src="assets/plant_stage1.svg" alt="" draggable="false" />
+              <img id="plantSprite1" class="plant hidden" src="assets/plant_stage1.svg" alt="" draggable="false" />
+              <img id="plantSprite2" class="plant hidden" src="assets/plant_stage1.svg" alt="" draggable="false" />
+              <img id="plantSprite3" class="plant hidden" src="assets/plant_stage1.svg" alt="" draggable="false" />
+            </div>
+
+            <!-- Status da planta (slot selecionado) -->
+            <div id="plantInfoBalloon" class="plant-info hidden">
+              <div class="plant-info-title">
+                <span class="plant-info-title-label" id="plantInfoTitle">Planta</span>
+                <span class="plant-info-seed" id="plantInfoSeed">—</span>
+              </div>
+              <div class="plant-info-sub">
+                <span id="plantInfoStage">Estágio 1</span>
+                <span class="dot"></span>
+                <span id="plantInfoWater">Não regado</span>
+              </div>
+              <div class="plant-info-timer" id="plantInfoTimer"></div>
+            </div>
+
+            <!-- Seleção dos 4 espaços do canteiro -->
+            <button id="btnBed0" class="hit hit-bed hit-bed0" aria-label="Espaço 1"></button>
+            <button id="btnBed1" class="hit hit-bed hit-bed1" aria-label="Espaço 2"></button>
+            <button id="btnBed2" class="hit hit-bed hit-bed2" aria-label="Espaço 3"></button>
+            <button id="btnBed3" class="hit hit-bed hit-bed3" aria-label="Espaço 4"></button>
+
+
+            <div id="hintPot" class="hint">Arraste para o lado ➜</div>
+
+            <!-- Botões transparentes na posição dos botões do layout -->
+            <button id="btnChooseSeed" class="hit hit-choose-seed" aria-label="Escolher semente"></button>
+            <button id="btnPlant" class="hit hit-plant" aria-label="Plantar"></button>
+            <button id="btnWater" class="hit hit-water" aria-label="Regar"></button>
+            <button id="btnHarvest" class="hit hit-harvest" aria-label="Colher"></button>
+          </div>
+        </section>
+
+        <!-- TELA 2: RANCHO -->
+        <section class="screen screen-ranch" aria-label="Tela do rancho">
+          <img class="bg" src="assets/tela_rancho.png" alt="Fundo - Rancho" draggable="false" />
+          <div class="overlay" aria-hidden="false">
+      <header class="hud">
+        <div class="hud-left">
+          <img class="coin" src="assets/icon_coin.svg" alt="Moedas" />
+          <div class="money">
+            <div class="label">Moedas</div>
+            <div class="value moneyValue">0</div>
+          </div>
+        </div>
+        <div class="hud-right">
+          <div class="clock">
+            <div class="label">Horário</div>
+            <div class="value clockValue">--:--:--</div>
+          </div>
+          <button class="icon-btn btnMusic" type="button" title="Música">🎵</button>
+        </div>
+      </header>
+    <div id="hintRanch" class="hint">⬅ Arraste para voltar</div>
+
+            <!-- Área onde mostramos os animais comprados (sobre o curral) -->
+            <div id="animalArea" class="animal-area" aria-label="Animais no rancho"></div>
+
+            <button id="btnBuyAnimals" class="hit hit-buy" aria-label="Comprar animais"></button>
+            <button id="btnChooseAnimal" class="hit hit-choose-animal" aria-label="Escolher animal"></button>
+            <button id="btnFeed" class="hit hit-feed" aria-label="Alimentar"></button>
+            <button id="btnHarvestRanch" class="hit hit-harvest-ranch" aria-label="Colher do rancho"></button>
+          </div>
+        </section>
+
+        <!-- TELA 3: PEIXES -->
+        <section class="screen screen-fish" aria-label="Tela dos peixes">
+          <img class="bg" src="assets/tela_peixe.png" alt="Fundo - Peixes" draggable="false" />
+          <div class="overlay" aria-hidden="false">
+            <header class="hud">
+              <div class="hud-left">
+                <img class="coin" src="assets/icon_coin.svg" alt="Moedas" />
+                <div class="money">
+                  <div class="label">Moedas</div>
+                  <div class="value moneyValue">0</div>
+                </div>
+              </div>
+              <div class="hud-right">
+                <div class="clock">
+                  <div class="label">Horário</div>
+                  <div class="value clockValue">--:--:--</div>
+                </div>
+                <button class="icon-btn btnMusic" type="button" title="Música">🎵</button>
+              </div>
+            </header>
+
+            <div id="hintFish" class="hint">⬅ Arraste para voltar</div>
+
+            <!-- Área onde mostramos os peixes comprados (sobre o lago) -->
+            <div id="fishArea" class="fish-area" aria-label="Peixes no lago"></div>
+
+            <button id="btnBuyFish" class="hit hit-buy" aria-label="Comprar peixes"></button>
+            <button id="btnChooseFish" class="hit hit-choose-animal" aria-label="Escolher peixe"></button>
+            <button id="btnFeedFish" class="hit hit-feed" aria-label="Alimentar peixes"></button>
+            <button id="btnHarvestFish" class="hit hit-harvest-ranch" aria-label="Colher do lago"></button>
+          </div>
+        </section>
+      </div>
+    </div>
+        <!-- MODAL: sementes -->
+    <div id="seedModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Sementes">
+      <div class="modal-card">
+        <div class="modal-title">Sementes</div>
+        <div class="modal-sub">Compre sementes e selecione uma para plantar. (Crescimento mínimo 10 min)</div>
+        <input id="seedSearch" class="search" placeholder="Buscar semente..." autocomplete="off" />
+
+        <div class="tabs">
+          <button id="tabShop" class="tab active">Loja</button>
+          <button id="tabInv" class="tab">Inventário</button>
+        </div>
+
+        <div class="seed-layout">
+          <div class="seed-rail" aria-label="Categorias">
+            <button class="rail-btn active" data-group="Hortaliças" title="Hortaliças">🥬</button>
+            <button class="rail-btn" data-group="Grãos" title="Grãos">🌾</button>
+            <button class="rail-btn" data-group="Frutas" title="Frutas">🍓</button>
+            <button class="rail-btn" data-group="Árvores" title="Árvores">🌳</button>
+            <button class="rail-btn" data-group="Especiais" title="Especiais">✨</button>
+          </div>
+          <div class="seed-panel">
+            <div id="seedShop" class="list" aria-label="Loja de sementes"></div>
+            <div id="seedInv" class="list hidden" aria-label="Inventário de sementes"></div>
+          </div>
+        </div>
+
+        <div class="row">
+          <button id="closeSeedModal" class="secondary">Fechar</button>
+          <div class="status">
+            Selecionada: <span id="seedSelected">nenhuma</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: comprar animais -->
+    <div id="animalModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Comprar animais">
+      <div class="modal-card">
+        <div class="modal-title">Comprar animais (máx. 3)</div>
+        <div class="modal-sub">Cada animal rende moedas com o tempo, mesmo com o jogo fechado.</div>
+        <div class="grid">
+          <button class="tile" data-animal="vaca">🐄 Vaca — 120</button>
+          <button class="tile" data-animal="porco">🐖 Porco — 90</button>
+          <button class="tile" data-animal="cavalo">🐎 Cavalo — 150</button>
+        </div>
+        <div class="row">
+          <button id="closeAnimalModal" class="secondary">Fechar</button>
+          <div class="status">Seus animais: <span id="animalCount">0</span>/3</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: comprar peixes -->
+    <div id="fishModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Comprar peixes">
+      <div class="modal-card">
+        <div class="modal-title">Comprar peixes (máx. 5)</div>
+        <div class="modal-sub">Cada peixe rende moedas com o tempo, mesmo com o jogo fechado.</div>
+        <div class="grid">
+          <button class="tile" data-fish="tilapia">🐟 Tilápia — 60</button>
+          <button class="tile" data-fish="dourado">🐠 Dourado — 90</button>
+          <button class="tile" data-fish="carpa">🐡 Carpa — 120</button>
+        </div>
+        <div class="row">
+          <button id="closeFishModal" class="secondary">Fechar</button>
+          <div class="status">Seus peixes: <span id="fishCount">0</span>/5</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast hidden" aria-live="polite"></div>
+  </div>
+  <audio id="bgm" src="assets/audio/bgm.mp3" loop preload="auto"></audio>
+
+  <!-- Modal Música -->
+  <div id="musicModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Música">
+    <div class="modal-card">
+      <div class="modal-title">Música</div>
+      <div class="modal-sub">Controle o volume e ligue/desligue.</div>
+
+      <div class="row" style="display:flex; gap:10px; align-items:center; margin:10px 0;">
+        <button id="btnMusicToggle" class="btn" type="button">🔊 Ligada</button>
+        <div style="flex:1;">
+          <div class="label" style="margin-bottom:6px;">Volume</div>
+          <input id="musicVolume" type="range" min="0" max="100" value="35" />
+        </div>
+      </div>
+
+      <div class="modal-actions" style="display:flex; gap:10px; justify-content:space-between; align-items:center;">
+        <button id="btnFixMoney" class="btn" type="button">🪙 Corrigir moedas</button>
+        <div style="display:flex; gap:10px;">
+          <button id="btnCloseMusic" class="btn" type="button">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script no fim para garantir que todo o DOM (incluindo áudio/modais) já foi carregado -->
+  <script src="app.js"></script>
+</body>
+</html>
